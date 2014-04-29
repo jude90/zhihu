@@ -33,7 +33,8 @@ class Spider(object):
 				next_urls = hdl.get()
 				visited.set(url,url)
 				gevent.sleep(0.5)
-				[todo.put(ul,timeout=10) for  ul in next_urls]# if not visited.exists(url)]
+				todo.put(next_urls.pop())
+				#[todo.put(ul,timeout=10) for  ul in next_urls]# if not visited.exists(url)]
 				gevent.sleep(0.5)
 		except :
 			#fix me
@@ -83,8 +84,18 @@ class Route(object):
 		print "WARNING :",url,"not match any handler"
 		return None
 
-route = Route()	
-		
+
+if __name__ == '__main__':
+	from redis import Redis
+	from zhihu_fetch import People, Question,route
+	urls =['/people/xu-chi-45','/question/20664147','/question/21441534','/people/fengduan']
+
+	RDB = Redis(db=1)
+	#spider = Spider(route, RDB)
+	spider = Spider(route,RDB)
+	for item in urls:
+		spider.put(item)
+	spider.go(6)		
 
 
 
