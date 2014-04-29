@@ -15,7 +15,7 @@ class Spider(object):
 		
 		self.route = route
 		self.visited = RDB #must be a redis client
-		self.todolst = Queue(100) 
+		self.todolst = Queue() 
 
 	def put(self, item):
 		self.todolst.put(item)
@@ -33,8 +33,11 @@ class Spider(object):
 				next_urls = hdl.get()
 				visited.set(url,url)
 				gevent.sleep(0.5)
-				todo.put(next_urls.pop())
-				#[todo.put(ul,timeout=10) for  ul in next_urls]# if not visited.exists(url)]
+				#todo.put(next_urls.pop())
+				for  ul in next_urls :
+					if not visited.exists(ul):
+						todo.put(ul,timeout=10)
+
 				gevent.sleep(0.5)
 		except :
 			#fix me

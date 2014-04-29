@@ -47,7 +47,7 @@ if __name__ == '__main__':
 #	spider = Spider(route, RDB)
 #	spider.put("/question/23447870")
 #	spider.go(10)
-	urls =['/people/xu-chi-45','/question/20664147','/question/21441534','/people/fengduan']
+	urls =['/question/20055305','/question/20664147','/question/21441534','/people/fengduan']
 
 	#spider = Spider(route, RDB)
 	cola = Crawler(route,RDB)
