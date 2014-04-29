@@ -1,13 +1,13 @@
 #coding:utf-8
 import gevent.monkey
 gevent.monkey.patch_all()
-from gevent.queue import Empty, Queue
+from gevent.queue import Empty, Queue, Full
 from gevent import sleep , spawn, joinall 
 import requests
 from urlparse import urlparse, parse_qs
 import re
 import traceback
-
+import json
 
 class Spider(object):
 	"""docstring for Spider"""
@@ -34,26 +34,32 @@ class Spider(object):
 				visited.set(url,url)
 				gevent.sleep(0.1)
 				
-				[todo.put(ul,timeout=timeout+10) for ul in next_urls if (not visited.exists(ul) and (not todo.full()))]
-					
-						
-
-				
-		except :
+				[todo.put(ul,timeout=timeout+10) for ul in next_urls if  not (visited.exists(ul) or todo.full())]
+		except Empty,Full:						
+		#except :
 			#fix me
 			traceback.print_exc()
 			return 
+		
 
 	def go(self,num,timeout=60):
 		self.workers = [spawn(self._fetch,timeout) for i in xrange(num)]
 		gevent.sleep(1)
-		self.workers[0].join()
+		
+		joinall(self.workers)
+		
+		
 
 	#fix me
 	def stop(self):
-		for worker in self.workers:
-			workers.kill()
-
+		with open("todolog.txt",'a+') as log:
+			lst = [item for item in self.todolst.copy()]
+			json.dump(lst, log)
+		sleep(1)	
+			
+		gevent.killall(self.workers)
+		#for wk in self.workers:
+		#	wk.kill(Empty,timeout=1)	
 		self.visited.save()
 
 class Handler(object):
@@ -91,15 +97,20 @@ class Route(object):
 if __name__ == '__main__':
 	from redis import Redis
 	from zhihu_fetch import People, Question,route
-	urls =['/question/22913650','/question/20554266','/question/21441534','/people/fengduan']
+	urls =['/question/23556884','/question/19861840','/question/20250938']
 
 	RDB = Redis(db=1)
 	#spider = Spider(route, RDB)
 	spider = Spider(route,RDB)
 	for item in urls:
 		spider.put(item)
-	spider.go(6)		
-
+	try:
+		spider.go(10)
+	except KeyboardInterrupt, e:
+		spider.stop()
+	
+	
+			
 
 
 
