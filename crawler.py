@@ -3,6 +3,7 @@ import re
 from threading import Thread
 import time
 from Queue import Queue as Que
+from Queue import Empty, Full
 class Crawler(object):
 	"""docstring for Crawler"""
 	def __init__(self, route, RDB):
@@ -28,12 +29,9 @@ class Crawler(object):
 				next_urls = hdl.get()
 				visited.set(url,url)
 				
-				time.sleep(0.5)
-				for  ul in next_urls :
-					#if not visited.exists(url):
-					if todo.not_full:todo.put(ul) 
-				
-		except :
+				time.sleep(0.1)
+				[todo.put(ul,timeout=timeout+10) for ul in next_urls if  not (visited.exists(ul) or todo.full())]				
+		except Empty:
 			#fix me
 			traceback.print_exc()
 			return 
@@ -43,6 +41,10 @@ class Crawler(object):
 			g = Thread(target=self._fetch)
 			g.start()
 		g.join()
+
+	def stop(self):pass
+
+
 
 class Route(object):
 	"""docstring for Route"""
@@ -73,3 +75,18 @@ class Handler(object):
 		
 	def get(self, url):
 		pass
+
+if __name__ == '__main__':
+	
+	from redis import Redis
+	from zhihu_fetch import People, Question,route
+	urls =['/question/22624255','/question/20584119','/question/19861840']
+	
+	RDB = Redis(db=1)
+
+
+	#spider = Spider(route, RDB)
+	cola = Crawler(route,RDB)
+	for item in urls:
+		cola.put(item)
+	cola.go(6)
