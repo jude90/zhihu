@@ -1,65 +1,48 @@
-#coding:utf-8
-import gevent.monkey
-gevent.monkey.patch_all()
-from gevent.queue import Empty, Queue
-from gevent import sleep , spawn, joinall 
-import requests
-from urlparse import urlparse, parse_qs
-import re
 import traceback
-
-
-class Spider(object):
-	"""docstring for Spider"""
+import re
+from threading import Thread
+import time
+from Queue import Queue as Que
+class Crawler(object):
+	"""docstring for Crawler"""
 	def __init__(self, route, RDB):
 		
 		self.route = route
 		self.visited = RDB #must be a redis client
-		self.todolst = Queue(100) 
+		self.todolst = Que(100) 
 
 	def put(self, item):
 		self.todolst.put(item)
 
-	def _fetch(self, timeout):
+	def _fetch(self, timeout=10):
 		todo = self.todolst
 		route = self.route
 		visited = self.visited
 		try:
 			while True:
-				url = todo.get(timeout=timeout+10)
+				url = todo.get(timeout=timeout)
 				handler = route.match(url)
+
 				if not handler: continue
 				hdl = handler(url)
 				next_urls = hdl.get()
 				visited.set(url,url)
-				gevent.sleep(0.5)
-				[todo.put(ul,timeout=10) for  ul in next_urls]# if not visited.exists(url)]
-				gevent.sleep(0.5)
+				
+				time.sleep(0.5)
+				for  ul in next_urls :
+					#if not visited.exists(url):
+					if todo.not_full:todo.put(ul) 
+				
 		except :
 			#fix me
 			traceback.print_exc()
 			return 
 
 	def go(self,num,timeout=60):
-		self.workers = [spawn(self._fetch,timeout) for i in xrange(num)]
-		gevent.sleep(1)
-		self.workers[0].join()
-
-	#fix me
-	def stop(self):
-		for worker in self.workers:
-			workers.kill()
-
-		self.visited.save()
-
-class Handler(object):
-	"""baseclass for Handler"""
-	def __init__(self, url ):
-		self.url = url
-		
-	def get(self, url):
-		pass
-		
+		for i in xrange(num):
+			g = Thread(target=self._fetch)
+			g.start()
+		g.join()
 
 class Route(object):
 	"""docstring for Route"""
@@ -83,13 +66,10 @@ class Route(object):
 		print "WARNING :",url,"not match any handler"
 		return None
 
-route = Route()	
+class Handler(object):
+	"""baseclass for Handler"""
+	def __init__(self, url ):
+		self.url = url
 		
-
-
-
-
-
-
-
-
+	def get(self, url):
+		pass
