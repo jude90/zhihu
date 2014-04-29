@@ -15,7 +15,7 @@ class Spider(object):
 		
 		self.route = route
 		self.visited = RDB #must be a redis client
-		self.todolst = Queue() 
+		self.todolst = Queue(100) 
 
 	def put(self, item):
 		self.todolst.put(item)
@@ -26,19 +26,19 @@ class Spider(object):
 		visited = self.visited
 		try:
 			while True:
-				url = todo.get(timeout=timeout+10)
+				url = todo.get(timeout=timeout)
 				handler = route.match(url)
 				if not handler: continue
 				hdl = handler(url)
 				next_urls = hdl.get()
 				visited.set(url,url)
-				gevent.sleep(0.5)
-				#todo.put(next_urls.pop())
-				for  ul in next_urls :
-					if not visited.exists(ul):
-						todo.put(ul,timeout=10)
+				gevent.sleep(0.1)
+				
+				[todo.put(ul,timeout=timeout+10) for ul in next_urls if (not visited.exists(ul) and (not todo.full()))]
+					
+						
 
-				gevent.sleep(0.5)
+				
 		except :
 			#fix me
 			traceback.print_exc()
@@ -91,7 +91,7 @@ class Route(object):
 if __name__ == '__main__':
 	from redis import Redis
 	from zhihu_fetch import People, Question,route
-	urls =['/people/xu-chi-45','/question/20664147','/question/21441534','/people/fengduan']
+	urls =['/question/22913650','/question/20554266','/question/21441534','/people/fengduan']
 
 	RDB = Redis(db=1)
 	#spider = Spider(route, RDB)
