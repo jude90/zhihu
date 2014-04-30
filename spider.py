@@ -8,7 +8,7 @@ from urlparse import urlparse, parse_qs
 import re
 import traceback
 import json
-
+from redis import ConnectionError
 class Spider(object):
 	"""docstring for Spider"""
 	def __init__(self, route, RDB):
@@ -97,7 +97,7 @@ class Route(object):
 if __name__ == '__main__':
 	from redis import Redis
 	from zhihu_fetch import People, Question,route
-	urls =['/question/23556884','/question/19861840','/question/20250938']
+	
 
 	RDB = Redis(db=1)
 	#spider = Spider(route, RDB)

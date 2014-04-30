@@ -4,6 +4,8 @@ from threading import Thread
 import time
 from Queue import Queue as Que
 from Queue import Empty, Full
+from redis import ConnectionError
+
 class Crawler(object):
 	"""docstring for Crawler"""
 	def __init__(self, route, RDB):
@@ -16,6 +18,12 @@ class Crawler(object):
 		self.todolst.put(item)
 
 	def _fetch(self, timeout=10):
+		def select(tag):
+			while True:
+				key = visited.randomkey()
+				if visited.get(key) == tag: break					
+			return key
+
 		todo = self.todolst
 		route = self.route
 		visited = self.visited
@@ -26,13 +34,19 @@ class Crawler(object):
 
 				if not handler: continue
 				hdl = handler(url)
-				next_urls = hdl.get()
-				visited.set(url,url)
+				new_urls = hdl.get()
+				visited.set(url,"done")
 				
 				time.sleep(0.1)
-				[todo.put(ul,timeout=timeout+10) for ul in next_urls if  not (visited.exists(ul) or todo.full())]				
-		except Empty:
-			#fix me
+				
+				[visited.set(ul, "todo") for ul in new_urls if not visited.exists(ul)]
+				while not todo.full():
+					todo.put(select('todo'))
+
+					
+
+		except Empty,ConnectionError:
+			
 			traceback.print_exc()
 			return 
 
@@ -80,9 +94,9 @@ if __name__ == '__main__':
 	
 	from redis import Redis
 	from zhihu_fetch import People, Question,route
-	urls =['/question/22624255','/question/20584119','/question/19861840']
+	urls =['/question/22624255','/question/20584119','/question/21084111']
 	
-	RDB = Redis(db=1)
+	RDB = Redis(db=2)
 
 
 	#spider = Spider(route, RDB)
