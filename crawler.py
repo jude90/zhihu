@@ -34,11 +34,11 @@ class Crawler(object):
 
 				if not handler: continue
 				hdl = handler(url)
-				new_urls = hdl.get()
 				visited.set(url,"done")
+
 				
 				time.sleep(0.1)
-				
+				new_urls = hdl.get()
 				[visited.set(ul, "todo") for ul in new_urls if not visited.exists(ul)]
 				while not todo.full():
 					todo.put(select('todo'))
@@ -101,6 +101,8 @@ if __name__ == '__main__':
 
 	#spider = Spider(route, RDB)
 	cola = Crawler(route,RDB)
-	for item in urls:
-		cola.put(item)
+	for i in xrange(50):
+		key = RDB.randomkey()
+		if RDB.get(key) =="todo":
+			cola.put(key)
 	cola.go(6)
