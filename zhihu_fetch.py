@@ -4,6 +4,8 @@ import requests
 import re
 from redis import Redis
 from crawler import Crawler, Route, Handler
+from model import People, DB_Session
+from lxml import etree 
 
 PEOPLE = "/people/[\w-]+"
 QUESTION = "/question/\d+"
@@ -15,7 +17,7 @@ route = Route()
 
 @route(PEOPLE)
 class People(Handler):
-	
+	session = DB_Session()
 	"""docstring for People"""
 	def __init__(self, url):
 		super(People, self).__init__(url)
@@ -23,6 +25,7 @@ class People(Handler):
 	def get(self):
 		
 		page = requests.get(SITE + self.url,headers=HEAD)
+
 		print page.status_code 
 		print "got url %s !" %self.url
 		return set(re.findall(PEOPLE, page.content)+re.findall(QUESTION, page.content))
@@ -54,3 +57,6 @@ if __name__ == '__main__':
 	for item in urls:
 		cola.put(item)
 	cola.go(6)
+
+
+
