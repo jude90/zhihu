@@ -4,7 +4,7 @@ import requests
 import re
 from redis import Redis
 from crawler import Crawler, Route, Handler
-from model import People, DB_Session
+from model import  DB_Session, User
 from lxml import etree 
 
 PEOPLE = "/people/[\w-]+"
@@ -25,6 +25,17 @@ class People(Handler):
 	def get(self):
 		
 		page = requests.get(SITE + self.url,headers=HEAD)
+		dom = etree.HTML(page.content.decode("utf-8"))
+
+		# ugly code
+		people = {}
+		people['name'] = self.url
+		people['bio']  = (dom.xpath("//span[@class='bio']/@title") or " ")[0].encode("utf-8")
+		people['location'] = (dom.xpath("//span[@class='location item']/@title") or " ")[0].encode("utf-8")
+		people['business'] = (dom.xpath("//span[@class='business item']/@title") or " ")[0].encode("utf-8")
+		people['education'] = (dom.xpath("//span[@class='education item']/@title") or " ")[0].encode("utf-8")
+		People.session.execute(User.__table__.insert(), people)
+		People.session.commit()
 
 		print page.status_code 
 		print "got url %s !" %self.url
@@ -54,9 +65,12 @@ if __name__ == '__main__':
 
 	#spider = Spider(route, RDB)
 	cola = Crawler(route,RDB)
-	for item in urls:
-		cola.put(item)
-	cola.go(6)
+	
+	for i in xrange(50):
+		key = RDB.randomkey()
+		if RDB.get(key) =="todo":
+			cola.put(key)	
+	cola.go(10)
 
 
 

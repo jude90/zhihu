@@ -1,6 +1,6 @@
 from sqlalchemy.orm import sessionmaker 
 from sqlalchemy import create_engine
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Unicode
 
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -10,15 +10,15 @@ DB_Session = sessionmaker(bind= engine)
 session = DB_Session()
 Base = declarative_base()
 
-class People(Base):
+class User(Base):
     __tablename__ = 'peoples';
     id = Column(Integer, primary_key=True)
-    name = Column(String(255))
-    bio = Column(String(255))
+    name = Column(Unicode(255,convert_unicode=False))
+    bio = Column(Unicode(255,convert_unicode=False))
     
-    employ = Column(String(255))
-    location = Column(String(255))
-    education = Column(String(255))
+    business = Column(Unicode(255,convert_unicode=False))
+    location = Column(Unicode(255,convert_unicode=False))
+    education = Column(Unicode(255,convert_unicode=False))
 
 if __name__ == '__main__':
     Base.metadata.create_all(engine)
