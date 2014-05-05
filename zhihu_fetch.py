@@ -36,7 +36,7 @@ class People(Handler):
 		people['education'] = (dom.xpath("//span[@class='education item']/@title") or " ")[0].encode("utf-8")
 		People.session.execute(User.__table__.insert(), people)
 		People.session.commit()
-
+		People.session.close()
 		print page.status_code 
 		print "got url %s !" %self.url
 		return set(re.findall(PEOPLE, page.content)+re.findall(QUESTION, page.content))
