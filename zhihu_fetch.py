@@ -25,8 +25,8 @@ class People(Handler):
 	def get(self):
 		
 		page = requests.get(SITE + self.url,headers=HEAD)
-		dom = etree.HTML(page.content.decode("utf-8"))
-
+		dom = etree.HTML(page.content)
+		session = DB_Session()
 		# ugly code
 		people = {}
 		people['name'] = self.url
@@ -34,9 +34,9 @@ class People(Handler):
 		people['location'] = (dom.xpath("//span[@class='location item']/@title") or " ")[0].encode("utf-8")
 		people['business'] = (dom.xpath("//span[@class='business item']/@title") or " ")[0].encode("utf-8")
 		people['education'] = (dom.xpath("//span[@class='education item']/@title") or " ")[0].encode("utf-8")
-		People.session.execute(User.__table__.insert(), people)
-		People.session.commit()
-		People.session.close()
+		session.execute(User.__table__.insert(), people)
+		session.commit()
+		session.close()
 		print page.status_code 
 		print "got url %s !" %self.url
 		return set(re.findall(PEOPLE, page.content)+re.findall(QUESTION, page.content))
