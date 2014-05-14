@@ -5,7 +5,7 @@ import time
 from Queue import Queue as Que
 from Queue import Empty, Full
 from redis import ConnectionError
-
+import random
 class Crawler(object):
 	"""docstring for Crawler"""
 	def __init__(self, route, RDB):
@@ -37,7 +37,7 @@ class Crawler(object):
 				visited.set(url,"done")
 
 				
-				time.sleep(0.1)
+				time.sleep(random.random())
 				new_urls = hdl.get()
 				[visited.set(ul, "todo") for ul in new_urls if not visited.exists(ul)]
 				while not todo.full():

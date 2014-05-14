@@ -12,8 +12,12 @@ QUESTION = "/question/\d+"
 SITE = "http://www.zhihu.com"
 HEAD = { "User-Agent": "Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN; rv:1.9.1) Gecko/20090624 Firefox/3.5",  
         "Accept": "text/plain"}
-route = Route()
 
+proxies ={
+	"http":"http://{0}".format("211.138.121.35:82")
+}
+
+route = Route()
 
 @route(PEOPLE)
 class People(Handler):
@@ -24,7 +28,7 @@ class People(Handler):
 		
 	def get(self):
 		
-		page = requests.get(SITE + self.url,headers=HEAD)
+		page = requests.get(SITE + self.url,headers=HEAD,proxies=proxies)
 		dom = etree.HTML(page.content)
 		session = DB_Session()
 		# ugly code
@@ -49,7 +53,7 @@ class Question(Handler):
 		super(Question, self).__init__(url)
 		
 	def get(self):
-		page = requests.get(SITE +self.url,headers=HEAD)
+		page = requests.get(SITE +self.url,headers=HEAD,proxies=proxies)
 		print page.status_code 
 		print "got url %s !" %self.url
 		return set(re.findall(PEOPLE, page.content)+re.findall(QUESTION, page.content))
