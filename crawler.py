@@ -79,7 +79,7 @@ class Route(object):
 			m = r.match(url)
 			if m:
 				return f
-		print "WARNING :",url,"not match any handler"
+		#print "WARNING :",url,"not match any handler"
 		return None
 
 class Handler(object):

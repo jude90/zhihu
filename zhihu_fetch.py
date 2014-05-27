@@ -41,11 +41,11 @@ class People(Handler):
 		session.execute(User.__table__.insert(), people)
 		session.commit()
 		session.close()
-		print page.status_code 
-		print "got url %s !" %self.url
+		
+		print page.status_code ,"got url %s !" %self.url
 		return set(re.findall(PEOPLE, page.content)+re.findall(QUESTION, page.content))
 
-@route(QUESTION)
+#@route(QUESTION)
 class Question(Handler):
 	
 	"""docstring for People"""
