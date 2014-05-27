@@ -6,16 +6,21 @@ from redis import Redis
 from crawler import Crawler, Route, Handler
 from model import  DB_Session, User
 from lxml import etree 
-
+from random import choice
 PEOPLE = "/people/[\w-]+"
 QUESTION = "/question/\d+"
 SITE = "http://www.zhihu.com"
 HEAD = { "User-Agent": "Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN; rv:1.9.1) Gecko/20090624 Firefox/3.5",  
         "Accept": "text/plain"}
 
-proxies ={
-	"http":"http://{0}".format("211.138.121.35:82")
-}
+proxies =choice([{"http":"http://183.207.228.27:80"},
+          		{"http":"http://221.130.162.242:8001"},
+           		{"http":"http://221.130.162.242:82"},
+            	{"http":"http://183.207.228.155:80"},
+            	{"http":"http://116.228.55.217:8003"},
+            	{"http":"http://111.1.36.24:82"},
+            	{"http":"http://183.207.228.155:80"},]
+            	)
 
 route = Route()
 
@@ -23,17 +28,19 @@ route = Route()
 class People(Handler):
 	session = DB_Session()
 	"""docstring for People"""
+	'''
 	def __init__(self, url):
 		super(People, self).__init__(url)
+	'''
+	@staticmethod
+	def get(url):
 		
-	def get(self):
-		
-		page = requests.get(SITE + self.url,headers=HEAD,proxies=proxies)
+		page = requests.get(SITE + url, headers=HEAD, proxies=proxies)
 		dom = etree.HTML(page.content)
 		session = DB_Session()
 		# ugly code
 		people = {}
-		people['name'] = self.url
+		people['name'] = url
 		people['bio']  = (dom.xpath("//span[@class='bio']/@title") or " ")[0].encode("utf-8")
 		people['location'] = (dom.xpath("//span[@class='location item']/@title") or " ")[0].encode("utf-8")
 		people['business'] = (dom.xpath("//span[@class='business item']/@title") or " ")[0].encode("utf-8")
@@ -41,21 +48,23 @@ class People(Handler):
 		session.execute(User.__table__.insert(), people)
 		session.commit()
 		session.close()
-		print page.status_code 
-		print "got url %s !" %self.url
+		 
+		print page.status_code ,"got url %s !" %url 
 		return set(re.findall(PEOPLE, page.content)+re.findall(QUESTION, page.content))
 
-@route(QUESTION)
+#@route(QUESTION)
 class Question(Handler):
 	
 	"""docstring for People"""
+	'''
 	def __init__(self, url):
 		super(Question, self).__init__(url)
-		
-	def get(self):
-		page = requests.get(SITE +self.url,headers=HEAD,proxies=proxies)
-		print page.status_code 
-		print "got url %s !" %self.url
+	'''
+	@staticmethod
+	def get(url):
+		page = requests.get(SITE +url,headers=HEAD,proxies=proxies)
+		 
+		print "got url %s !" %url, page.status_code 
 		return set(re.findall(PEOPLE, page.content)+re.findall(QUESTION, page.content))
 
 if __name__ == '__main__':

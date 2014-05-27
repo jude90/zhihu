@@ -21,7 +21,7 @@ class Crawler(object):
 		def select(tag):
 			while True:
 				key = visited.randomkey()
-				if visited.get(key) == tag: break					
+				if visited.get(key) == tag: break
 			return key
 
 		todo = self.todolst
@@ -33,12 +33,14 @@ class Crawler(object):
 				handler = route.match(url)
 
 				if not handler: continue
-				hdl = handler(url)
+				# avoid  instanize
+				#hdl = handler(url)
 				visited.set(url,"done")
 
 				
 				time.sleep(random.random())
-				new_urls = hdl.get()
+				new_urls = handler.get(url)
+
 				[visited.set(ul, "todo") for ul in new_urls if not visited.exists(ul)]
 				while not todo.full():
 					todo.put(select('todo'))
@@ -79,15 +81,17 @@ class Route(object):
 			m = r.match(url)
 			if m:
 				return f
-		print "WARNING :",url,"not match any handler"
+		#print "WARNING :",url,"not match any handler"
 		return None
 
 class Handler(object):
 	"""baseclass for Handler"""
+	'''
 	def __init__(self, url ):
 		self.url = url
-		
-	def get(self, url):
+	'''
+	@staticmethod
+	def get(url):
 		pass
 
 if __name__ == '__main__':
