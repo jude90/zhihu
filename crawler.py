@@ -37,7 +37,7 @@ class Crawler(object):
 				visited.set(url,"done")
 
 				
-				#time.sleep(random.random())
+				time.sleep(random.random())
 				new_urls = hdl.get()
 				[visited.set(ul, "todo") for ul in new_urls if not visited.exists(ul)]
 				while not todo.full():

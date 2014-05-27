@@ -13,8 +13,16 @@
 	<div id="head">
 
 		<div id="peoples">
-			%for p in peoples:
-				<li><a href={{"http://www.zhihu.com"+p}} target=_blank>{{p}}</a></li>
+			%for name in peoples:
+			<p></p>
+				<div id="person">
+				<li><a href={{"http://www.zhihu.com"+name}} target=_blank class="name">{{name}}</a></li>
+				<p>
+					<span class="bio">
+						{{peoples[name]}}
+					</span>
+				</p>
+				</div>
 			%end
 		</div>
 </body>
