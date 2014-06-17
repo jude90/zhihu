@@ -1,6 +1,5 @@
 
-一个bug 遍体的 爬虫框架（这也能算框架吗）
-很好玩。
+一个微型爬虫框架
 
 <code>spider.py</code> 使用 gevent ，没有更新。。
 <code>crawler.py</code> 使用 threading。所有的改动都集中在这个文件了。
